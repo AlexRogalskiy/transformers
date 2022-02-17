@@ -36,6 +36,7 @@ from ...file_utils import (
     add_start_docstrings,
     add_start_docstrings_to_model_forward,
     is_scipy_available,
+    replace_return_docstrings,
     requires_backends,
 )
 from ...modeling_outputs import BaseModelOutputWithCrossAttentions
@@ -2392,6 +2393,8 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
 
         return class_queries_logits, masks_queries_logits, auxilary_logits
 
+    @add_start_docstrings_to_model_forward(MASKFORMER_INPUTS_DOCSTRING)
+    @replace_return_docstrings(output_type=MaskFormerForInstanceSegmentationOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
         pixel_values: Tensor,
@@ -2429,6 +2432,7 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
         >>> masks_queries_logits = outputs.masks_queries_logits
         >>> # you can pass them to feature_extractor for postprocessing
         >>> output = feature_extractor.post_process_segmentation(outputs)
+        >>> output = feature_extractor.post_process_semantic_segmentation(outputs)
         >>> output = feature_extractor.post_process_panoptic_segmentation(outputs)
         ```
         """
