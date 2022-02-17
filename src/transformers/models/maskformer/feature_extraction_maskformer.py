@@ -480,7 +480,6 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
         mask_probs = masks_queries_logits.sigmoid()
         # mask probs has shape [BATCH, QUERIES, HEIGHT, WIDTH]
         # now, we need to iterate over the batch size to correctly process the segmentation we got from the queries using our thresholds. Even if the original predicted masks have the same shape across the batch, they won't after thresholding so batch-wise operations are impossible
-
         results: List[Dict[str, Tensor]] = []
         for (mask_probs, pred_scores, pred_labels) in zip(mask_probs, pred_scores, pred_labels):
 

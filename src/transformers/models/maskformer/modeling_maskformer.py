@@ -14,15 +14,11 @@
 # limitations under the License.
 """ PyTorch MaskFormer model."""
 
-from __future__ import annotations
-
 import collections.abc
-import logging
 import math
 import random
 from dataclasses import dataclass
 from numbers import Number
-from optparse import Option
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -42,7 +38,7 @@ from ...file_utils import (
     is_scipy_available,
     requires_backends,
 )
-from ...modeling_outputs import BaseModelOutput, BaseModelOutputWithCrossAttentions
+from ...modeling_outputs import BaseModelOutputWithCrossAttentions
 from ...modeling_utils import PreTrainedModel, find_pruneable_heads_and_indices, prune_linear_layer
 from ..detr import DetrConfig
 from ..swin import SwinConfig
@@ -2293,7 +2289,7 @@ class MaskFormerModel(MaskFormerPretrainedModel):
         self,
         pixel_values: Tensor,
         pixel_mask: Optional[Tensor] = None,
-        output_hidden_states: Option[bool] = False,
+        output_hidden_states: Optional[bool] = False,
         return_dict: Optional[bool] = True,
     ) -> MaskFormerOutput:
 
@@ -2367,7 +2363,7 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
         # probably an awkward way to reduce it
         return torch.tensor(list(loss_dict.values()), dtype=torch.float).sum()
 
-    def get_logits(self, outputs: MaskFormerOutput) -> Tuple[Tensor, Tensor, List[str, Tensor]]:
+    def get_logits(self, outputs: MaskFormerOutput) -> Tuple[Tensor, Tensor, Dict[str, Tensor]]:
         pixel_embeddings: Tensor = outputs.pixel_decoder_last_hidden_state
         # get the auxilary predictions (one for each decoder's layer)
         auxilary_logits: List[str, Tensor] = []
@@ -2402,7 +2398,7 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
         mask_labels: Optional[Tensor] = None,
         class_labels: Optional[Tensor] = None,
         pixel_mask: Optional[Tensor] = None,
-        output_hidden_states: Option[bool] = False,
+        output_hidden_states: Optional[bool] = False,
         return_dict: Optional[bool] = True,
     ) -> MaskFormerForInstanceSegmentationOutput:
         r"""
@@ -2417,17 +2413,25 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
         Examples:
 
         ```python
-         >>> from transformers import MaskFormerFeatureExtractor, MaskFormerForObjectDetection >>> from PIL import
-        Image >>> import requests >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg" >>> image =
-        Image.open(requests.get(url, stream=True).raw) >>> feature_extractor =
-        MaskFormerFeatureExtractor.from_pretrained("facebook/maskformer-swin-base-ade") >>> model =
-        MaskFormerForInstanceSegmentation.from_pretrained("facebook/maskformer-swin-base-ade") >>> inputs =
-        feature_extractor(images=image, return_tensors="pt") >>> outputs = model(**inputs) >>> # model predicts
-        class_queries_logits of shape `(batch_size, num_queries)` >>> # and masks_queries_logits of shape `(batch_size,
-        num_queries, height, width)` >>> class_queries_logits = outputs.class_queries_logits >>> masks_queries_logits =
-        outputs.masks_queries_logits >>> # you can pass them to feature_extractor for postprocessing >>> output =
-        feature_extractor.post_process_segmentation(outputs) >>> output =
-        feature_extractor.post_process_panoptic_segmentation(outputs)"""
+        >>> from transformers import MaskFormerFeatureExtractor, MaskFormerForObjectDetection
+        >>> from PIL import Image
+        >>> import requests
+
+        >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
+        >>> image = Image.open(requests.get(url, stream=True).raw)
+        >>> feature_extractor = MaskFormerFeatureExtractor.from_pretrained("facebook/maskformer-swin-base-ade")
+        >>> model = MaskFormerForInstanceSegmentation.from_pretrained("facebook/maskformer-swin-base-ade")
+        >>> inputs = feature_extractor(images=image, return_tensors="pt")
+        >>> outputs = model(**inputs)
+        >>> # model predicts class_queries_logits of shape `(batch_size, num_queries)`
+        >>> # and masks_queries_logits of shape `(batch_size, num_queries, height, width)`
+        >>> class_queries_logits = outputs.class_queries_logits
+        >>> masks_queries_logits = outputs.masks_queries_logits
+        >>> # you can pass them to feature_extractor for postprocessing
+        >>> output = feature_extractor.post_process_segmentation(outputs)
+        >>> output = feature_extractor.post_process_panoptic_segmentation(outputs)
+        ```
+        """
 
         outputs: MaskFormerOutput = self.model(pixel_values, pixel_mask, output_hidden_states, return_dict)
 
