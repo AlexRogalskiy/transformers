@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import annotations
-
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
@@ -535,9 +533,7 @@ class OriginalMaskFormerCheckpoinToOursConverter:
         return mask_former
 
     @staticmethod
-    def using_dirs(
-        checkpoints_dir: Path, config_dir: Path
-    ) -> Iterator[Tuple[OriginalMaskFormerCheckpoinToOursConverter, Path, Path]]:
+    def using_dirs(checkpoints_dir: Path, config_dir: Path) -> Iterator[Tuple[object, Path, Path]]:
         checkpoints: List[Path] = checkpoints_dir.glob("**/*.pkl")
 
         for checkpoint in checkpoints:
