@@ -2291,7 +2291,7 @@ class MaskFormerModel(metaclass=DummyObject):
         requires_backends(self, ["torch"])
 
 
-class MaskFormerPreTrainedModel(metaclass=DummyObject):
+class MaskFormerPretrainedModel(metaclass=DummyObject):
     _backends = ["torch"]
 
     def __init__(self, *args, **kwargs):

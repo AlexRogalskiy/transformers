@@ -81,9 +81,9 @@ def is_dist_avail_and_initialized():
 
 
 @dataclass
-class SwinModelOutputWithPooling(ModelOutput):
+class MaskFormerSwinModelOutputWithPooling(ModelOutput):
     """
-    Class for SwinModel's outputs that also contains the spatial dimensions of the hidden states.
+    Class for MaskFormerSwinModel's outputs that also contains the spatial dimensions of the hidden states.
 
     Args:
         last_hidden_state (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`):
@@ -115,7 +115,7 @@ class SwinModelOutputWithPooling(ModelOutput):
 
 
 @dataclass
-class SwinBaseModelOutput(ModelOutput):
+class MaskFormerSwinBaseModelOutput(ModelOutput):
     """
     Base class for model's outputs that may also contain a past key/values (to speed up sequential decoding).
 
@@ -188,7 +188,7 @@ class DetrDecoderOutput(BaseModelOutputWithCrossAttentions):
 @dataclass
 class MaskFormerPixelLevelModuleOutput(ModelOutput):
     """MaskFormer's pixel level module output. It returns both the last and (optionally) the hidden states from the `encoder`
-    and `decoder`. By default, the `encoder` is a Swin Transformer and the `decoder` is a Feature Pyramid Network
+    and `decoder`. By default, the `encoder` is a MaskFormerSwin Transformer and the `decoder` is a Feature Pyramid Network
     (FPN).
 
     The `encoder_last_hidden_state` are referred on the paper as **images features**, while `decoder_last_hidden_state`
@@ -516,7 +516,7 @@ def drop_path(input, drop_prob=0.0, training=False, scale_by_keep=True):
     return input * random_tensor
 
 
-class SwinEmbeddings(nn.Module):
+class MaskFormerSwinEmbeddings(nn.Module):
     """
     Construct the patch and position embeddings.
     """
@@ -524,7 +524,7 @@ class SwinEmbeddings(nn.Module):
     def __init__(self, config):
         super().__init__()
 
-        self.patch_embeddings = SwinPatchEmbeddings(
+        self.patch_embeddings = MaskFormerSwinPatchEmbeddings(
             image_size=config.image_size,
             patch_size=config.patch_size,
             num_channels=config.num_channels,
@@ -553,7 +553,7 @@ class SwinEmbeddings(nn.Module):
         return embeddings, output_dimensions
 
 
-class SwinPatchEmbeddings(nn.Module):
+class MaskFormerSwinPatchEmbeddings(nn.Module):
     """
     Image to Patch Embedding.
     """
@@ -591,7 +591,7 @@ class SwinPatchEmbeddings(nn.Module):
         return embeddings_flat, output_dimensions
 
 
-class SwinPatchMerging(nn.Module):
+class MaskFormerSwinPatchMerging(nn.Module):
     """
     Patch Merging Layer.
 
@@ -641,12 +641,12 @@ class SwinPatchMerging(nn.Module):
         return input_feature
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinDropPath
-class SwinDropPath(nn.Module):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinDropPath
+class MaskFormerSwinDropPath(nn.Module):
     """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks)."""
 
     def __init__(self, drop_prob=None, scale_by_keep=True):
-        super(SwinDropPath, self).__init__()
+        super(MaskFormerSwinDropPath, self).__init__()
         self.drop_prob = drop_prob
         self.scale_by_keep = scale_by_keep
 
@@ -654,7 +654,7 @@ class SwinDropPath(nn.Module):
         return drop_path(input, self.drop_prob, self.training, self.scale_by_keep)
 
 
-class SwinSelfAttention(nn.Module):
+class MaskFormerSwinSelfAttention(nn.Module):
     def __init__(self, config, dim, num_heads):
         super().__init__()
         if dim % num_heads != 0:
@@ -723,7 +723,7 @@ class SwinSelfAttention(nn.Module):
         attention_scores = attention_scores + relative_position_bias.unsqueeze(0)
 
         if attention_mask is not None:
-            # Apply the attention mask is (precomputed for all layers in SwinModel forward() function)
+            # Apply the attention mask is (precomputed for all layers in MaskFormerSwinModel forward() function)
             mask_shape = attention_mask.shape[0]
             attention_scores = attention_scores.view(
                 batch_size // mask_shape, mask_shape, self.num_attention_heads, dim, dim
@@ -752,8 +752,8 @@ class SwinSelfAttention(nn.Module):
         return outputs
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinSelfOutput
-class SwinSelfOutput(nn.Module):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinSelfOutput
+class MaskFormerSwinSelfOutput(nn.Module):
     def __init__(self, config, dim):
         super().__init__()
         self.dense = nn.Linear(dim, dim)
@@ -766,12 +766,12 @@ class SwinSelfOutput(nn.Module):
         return hidden_states
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinAttention
-class SwinAttention(nn.Module):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinAttention
+class MaskFormerSwinAttention(nn.Module):
     def __init__(self, config, dim, num_heads):
         super().__init__()
-        self.self = SwinSelfAttention(config, dim, num_heads)
-        self.output = SwinSelfOutput(config, dim)
+        self.self = MaskFormerSwinSelfAttention(config, dim, num_heads)
+        self.output = MaskFormerSwinSelfOutput(config, dim)
         self.pruned_heads = set()
 
     def prune_heads(self, heads):
@@ -799,8 +799,8 @@ class SwinAttention(nn.Module):
         return outputs
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinIntermediate
-class SwinIntermediate(nn.Module):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinIntermediate
+class MaskFormerSwinIntermediate(nn.Module):
     def __init__(self, config, dim):
         super().__init__()
         self.dense = nn.Linear(dim, int(config.mlp_ratio * dim))
@@ -815,8 +815,8 @@ class SwinIntermediate(nn.Module):
         return hidden_states
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinOutput
-class SwinOutput(nn.Module):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinOutput
+class MaskFormerSwinOutput(nn.Module):
     def __init__(self, config, dim):
         super().__init__()
         self.dense = nn.Linear(int(config.mlp_ratio * dim), dim)
@@ -828,7 +828,7 @@ class SwinOutput(nn.Module):
         return hidden_states
 
 
-class SwinBlock(nn.Module):
+class MaskFormerSwinBlock(nn.Module):
     def __init__(self, config, dim, input_resolution, num_heads, shift_size=0):
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
@@ -836,11 +836,11 @@ class SwinBlock(nn.Module):
         self.window_size = config.window_size
         self.input_resolution = input_resolution
         self.layernorm_before = nn.LayerNorm(dim, eps=config.layer_norm_eps)
-        self.attention = SwinAttention(config, dim, num_heads)
-        self.drop_path = SwinDropPath(config.drop_path_rate) if config.drop_path_rate > 0.0 else nn.Identity()
+        self.attention = MaskFormerSwinAttention(config, dim, num_heads)
+        self.drop_path = MaskFormerSwinDropPath(config.drop_path_rate) if config.drop_path_rate > 0.0 else nn.Identity()
         self.layernorm_after = nn.LayerNorm(dim, eps=config.layer_norm_eps)
-        self.intermediate = SwinIntermediate(config, dim)
-        self.output = SwinOutput(config, dim)
+        self.intermediate = MaskFormerSwinIntermediate(config, dim)
+        self.output = MaskFormerSwinOutput(config, dim)
 
     def get_attn_mask(self, input_resolution):
         if self.shift_size > 0:
@@ -940,14 +940,14 @@ class SwinBlock(nn.Module):
         return outputs
 
 
-class SwinLayer(nn.Module):
+class MaskFormerSwinLayer(nn.Module):
     def __init__(self, config, dim, input_resolution, depth, num_heads, drop_path, downsample):
         super().__init__()
         self.config = config
         self.dim = dim
         self.blocks = nn.ModuleList(
             [
-                SwinBlock(
+                MaskFormerSwinBlock(
                     config=config,
                     dim=dim,
                     input_resolution=input_resolution,
@@ -1000,7 +1000,7 @@ class SwinLayer(nn.Module):
         return hidden_states, output_dimensions, all_hidden_states
 
 
-class SwinEncoder(nn.Module):
+class MaskFormerSwinEncoder(nn.Module):
     def __init__(self, config, grid_size):
         super().__init__()
         self.num_layers = len(config.depths)
@@ -1008,14 +1008,14 @@ class SwinEncoder(nn.Module):
         dpr = [x.item() for x in torch.linspace(0, config.drop_path_rate, sum(config.depths))]
         self.layers = nn.ModuleList(
             [
-                SwinLayer(
+                MaskFormerSwinLayer(
                     config=config,
                     dim=int(config.embed_dim * 2**i_layer),
                     input_resolution=(grid_size[0] // (2**i_layer), grid_size[1] // (2**i_layer)),
                     depth=config.depths[i_layer],
                     num_heads=config.num_heads[i_layer],
                     drop_path=dpr[sum(config.depths[:i_layer]) : sum(config.depths[: i_layer + 1])],
-                    downsample=SwinPatchMerging if (i_layer < self.num_layers - 1) else None,
+                    downsample=MaskFormerSwinPatchMerging if (i_layer < self.num_layers - 1) else None,
                 )
                 for i_layer in range(self.num_layers)
             ]
@@ -1076,7 +1076,7 @@ class SwinEncoder(nn.Module):
         if not return_dict:
             return tuple(v for v in [hidden_states, all_hidden_states, all_self_attentions] if v is not None)
 
-        return SwinBaseModelOutput(
+        return MaskFormerSwinBaseModelOutput(
             last_hidden_state=hidden_states,
             hidden_states=all_hidden_states,
             hidden_states_spatial_dimensions=all_input_dimensions,
@@ -1084,8 +1084,8 @@ class SwinEncoder(nn.Module):
         )
 
 
-# Copied from transformers.models.swin.modeling_swin.SwinPreTrainedModel
-class SwinPreTrainedModel(PreTrainedModel):
+# Copied from transformers.models.swin.modeling_swin.MaskFormerSwinPreTrainedModel
+class MaskFormerSwinPreTrainedModel(PreTrainedModel):
     """
     An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained
     models.
@@ -1109,7 +1109,7 @@ class SwinPreTrainedModel(PreTrainedModel):
             module.weight.data.fill_(1.0)
 
     def _set_gradient_checkpointing(self, module, value=False):
-        if isinstance(module, SwinEncoder):
+        if isinstance(module, MaskFormerSwinEncoder):
             module.gradient_checkpointing = value
 
 
@@ -1147,18 +1147,18 @@ SWIN_INPUTS_DOCSTRING = r"""
 
 
 @add_start_docstrings(
-    "The bare Swin Model transformer outputting raw hidden-states without any specific head on top.",
+    "The bare MaskFormerSwin Model transformer outputting raw hidden-states without any specific head on top.",
     SWIN_START_DOCSTRING,
 )
-class SwinModel(SwinPreTrainedModel):
+class MaskFormerSwinModel(MaskFormerSwinPreTrainedModel):
     def __init__(self, config, add_pooling_layer=True):
         super().__init__(config)
         self.config = config
         self.num_layers = len(config.depths)
         self.num_features = int(config.embed_dim * 2 ** (self.num_layers - 1))
 
-        self.embeddings = SwinEmbeddings(config)
-        self.encoder = SwinEncoder(config, self.embeddings.patch_grid)
+        self.embeddings = MaskFormerSwinEmbeddings(config)
+        self.encoder = MaskFormerSwinEncoder(config, self.embeddings.patch_grid)
 
         self.layernorm = nn.LayerNorm(self.num_features, eps=config.layer_norm_eps)
         self.pooler = nn.AdaptiveAvgPool1d(1) if add_pooling_layer else None
@@ -1178,7 +1178,14 @@ class SwinModel(SwinPreTrainedModel):
             self.encoder.layer[layer].attention.prune_heads(heads)
 
     @add_start_docstrings_to_model_forward(SWIN_INPUTS_DOCSTRING)
-    # @replace_return_docstrings(output_type=SwinModelOutputWithPooling, config_class=_CONFIG_FOR_DOC)
+    @add_code_sample_docstrings(
+        processor_class=_FEAT_EXTRACTOR_FOR_DOC,
+        checkpoint=_CHECKPOINT_FOR_DOC,
+        output_type=MaskFormerSwinModelOutputWithPooling,
+        config_class=_CONFIG_FOR_DOC,
+        modality="vision",
+        expected_output=[1, 49, 768],
+    )
     def forward(
         self,
         pixel_values=None,
@@ -1227,7 +1234,7 @@ class SwinModel(SwinPreTrainedModel):
 
         hidden_states_spatial_dimensions = (input_dimensions,) + encoder_outputs.hidden_states_spatial_dimensions
 
-        return SwinModelOutputWithPooling(
+        return MaskFormerSwinModelOutputWithPooling(
             last_hidden_state=sequence_output,
             pooler_output=pooled_output,
             hidden_states=encoder_outputs.hidden_states,
@@ -1930,17 +1937,17 @@ class MaskFormerLoss(nn.Module):
         return num_masks_clamped
 
 
-class SwinTransformerBackbone(nn.Module):
-    """This class uses [`SwinModel`] to reshape its `hidden_states` from (`batch_size, sequence_length, hidden_size)` to
+class MaskFormerSwinTransformerBackbone(nn.Module):
+    """This class uses [`MaskFormerSwinModel`] to reshape its `hidden_states` from (`batch_size, sequence_length, hidden_size)` to
     (`batch_size, num_channels, height, width)`).
 
         Args:
-            config (SwinConfig): The configuration used by [`SwinModel`]
+            config (SwinConfig): The configuration used by [`MaskFormerSwinModel`]
     """
 
     def __init__(self, config: SwinConfig):
         super().__init__()
-        self.model = SwinModel(config)
+        self.model = MaskFormerSwinModel(config)
         self.hidden_states_norms = nn.ModuleList([nn.LayerNorm(out_shape) for out_shape in self.outputs_shapes])
 
     def forward(self, *args, **kwargs) -> List[Tensor]:
@@ -2139,7 +2146,7 @@ class MaskFormerPixelLevelModule(nn.Module):
         Segmentation](https://arxiv.org/abs/2107.06278). It runs the input image trough a backbone and a pixel decoder,
         generating an image feature map and pixel embeddings."""
         super().__init__()
-        self.encoder = SwinTransformerBackbone(config.backbone_config)
+        self.encoder = MaskFormerSwinTransformerBackbone(config.backbone_config)
         self.decoder = MaskFormerPixelDecoder(
             in_features=self.encoder.outputs_shapes[-1],
             feature_size=config.fpn_feature_size,
@@ -2416,10 +2423,9 @@ class MaskFormerForInstanceSegmentation(MaskFormerPretrainedModel):
         Examples:
 
         ```python
-        >>> from transformers import MaskFormerFeatureExtractor, MaskFormerForObjectDetection
+        >>> from transformers import MaskFormerFeatureExtractor, MaskFormerForInstanceSegmentation
         >>> from PIL import Image
         >>> import requests
-
         >>> url = "http://images.cocodataset.org/val2017/000000039769.jpg"
         >>> image = Image.open(requests.get(url, stream=True).raw)
         >>> feature_extractor = MaskFormerFeatureExtractor.from_pretrained("facebook/maskformer-swin-base-ade")
