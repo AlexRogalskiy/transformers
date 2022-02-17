@@ -18,24 +18,21 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from PIL import Image
-from torch.nn.functional import interpolate
 
 from transformers.models.maskformer.modeling_maskformer import MaskFormerForInstanceSegmentationOutput
 
 from ...feature_extraction_utils import BatchFeature, FeatureExtractionMixin
 from ...file_utils import TensorType, is_torch_available
-from ...image_utils import ImageFeatureExtractionMixin, is_torch_tensor
+from ...image_utils import ImageFeatureExtractionMixin, ImageInput, is_torch_tensor
 from ...utils import logging
 
 
 if is_torch_available():
     import torch
     from torch import Tensor, nn
+    from torch.nn.functional import interpolate
 
 logger = logging.get_logger(__name__)
-
-
-ImageInput = Union[Image.Image, np.ndarray, "torch.Tensor", List[Image.Image], List[np.ndarray], List["torch.Tensor"]]
 
 
 class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionMixin):
@@ -195,7 +192,7 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
 
             - **pixel_values** -- Pixel values to be fed to a model.
             - **pixel_mask** -- Pixel mask to be fed to a model (when `pad_and_return_pixel_mask=True` or if
-              *"pixel_mask"* is in `self.model_input_names`).
+              `"pixel_mask"` is in `self.model_input_names`).
             - **labels** -- Optional labels to be fed to a model (when `annotations` are provided)
         """
         # Input type checking for clearer error
@@ -317,7 +314,7 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
         """
 
         max_size = self._max_by_axis([list(image.shape) for image in pixel_values_list])
-        c, height, width = max_size
+        channels, height, width = max_size
         pixel_values = []
         pixel_mask = []
         mask_labels = []
@@ -326,7 +323,7 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
         for idx, image in enumerate(pixel_values_list):
             # create padded image
             if pad_and_return_pixel_mask:
-                padded_image = np.zeros((c, height, width), dtype=np.float32)
+                padded_image = np.zeros((channels, height, width), dtype=np.float32)
                 padded_image[: image.shape[0], : image.shape[1], : image.shape[2]] = np.copy(image)
                 image = padded_image
             pixel_values.append(image)
@@ -347,10 +344,7 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
                 pixel_mask.append(mask)
 
         # return as BatchFeature
-        data = {
-            "pixel_values": pixel_values,
-            "pixel_mask": pixel_mask,
-        }
+        data = {"pixel_values": pixel_values, "pixel_mask": pixel_mask}
 
         if annotations:
             data["mask_labels"] = mask_labels
@@ -363,14 +357,15 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
     def post_process_segmentation(
         self, outputs: MaskFormerForInstanceSegmentationOutput, target_size: Tuple[int, int] = None
     ) -> Tensor:
-        """Converts the output of [`MaskFormerForInstanceSegmentationOutput`] into image segmentation predictions. Only supports
-        PyTorch.
+        """
+        Converts the output of [`MaskFormerForInstanceSegmentationOutput`] into image segmentation predictions. Only
+        supports PyTorch.
 
-                Args:
-                    outputs (MaskFormerForInstanceSegmentationOutput): The outputs from MaskFor
+        Args:
+            outputs (MaskFormerForInstanceSegmentationOutput): The outputs from MaskFor
 
-                Returns:
-                    Tensor: A tensor of shape `batch_size, num_labels, height, width`
+        Returns:
+            Tensor: A tensor of shape `batch_size, num_labels, height, width`
         """
         # class_queries_logitss has shape [BATCH, QUERIES, CLASSES + 1]
         class_queries_logits = outputs.class_queries_logits
@@ -400,7 +395,6 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
         self, masks: Tensor, scores: Tensor, labels: Tensor, object_mask_threshold: float, num_labels: int
     ) -> Tuple[Tensor, Tensor, Tensor]:
         """
-
         Binarize the given masks using `object_mask_threshold`, it returns the associated values of `masks`, `scores`
         and `labels`
 
@@ -426,14 +420,15 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
     def post_process_semantic_segmentation(
         self, outputs: MaskFormerForInstanceSegmentationOutput, target_size: Tuple[int, int] = None
     ) -> Tensor:
-        """Converts the output of [`MaskFormerForInstanceSegmentationOutput`] into semantic segmentation predictions. Only
+        """
+        Converts the output of [`MaskFormerForInstanceSegmentationOutput`] into semantic segmentation predictions. Only
         supports PyTorch.
 
-                Args:
-                    outputs (MaskFormerForInstanceSegmentationOutput): The outputs from MaskFor
+        Args:
+            outputs (`MaskFormerForInstanceSegmentationOutput`): The outputs from MaskFormerForInstanceSegmentation
 
-                Returns:
-                    Tensor: A tensor of shape `batch_size, height, width`
+        Returns:
+            Tensor: A tensor of shape `batch_size, height, width`
         """
         segmentation: Tensor = self.post_process_segmentation(outputs, target_size)
         semantic_segmentation: Tensor = segmentation.argmax(dim=1)
@@ -450,9 +445,8 @@ class MaskFormerFeatureExtractor(FeatureExtractionMixin, ImageFeatureExtractionM
         Converts the output of [`MaskFormerForInstanceSegmentationOutput`] into image panoptic segmentation
         predictions. Only supports PyTorch.
 
-
         Args:
-            outputs (MaskFormerForInstanceSegmentationOutput): [description]
+            outputs (`MaskFormerForInstanceSegmentationOutput`): [description]
             object_mask_threshold (Optional[float], optional): [description]. Defaults to 0.8.
             overlap_mask_area_threshold (Optional[float], optional): [description]. Defaults to 0.8.
             is_thing_map (Dict[int, bool], optional): [description].

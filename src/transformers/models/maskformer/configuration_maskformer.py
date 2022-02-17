@@ -24,7 +24,7 @@ from ..swin import SwinConfig
 
 
 MASKFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP = [
-    "facebook/Francesco/maskformer-swin-base-ade",
+    "facebook/maskformer-swin-base-ade",
     # See all MaskFormer models at https://huggingface.co/models?filter=maskformer
 ]
 
@@ -44,7 +44,6 @@ class MaskFormerConfig(PretrainedConfig):
     Currently, maskformer supports only Swin backbone.
 
     Args:
-        dataset_metadata (DatasetMetadata, optional): [description]. Defaults to None.
         mask_feature_size (Optional[int], optional):
             The masks' features size, this value will also be used to specify the Feature Pyramid Network features
             size. Defaults to 256.
@@ -61,17 +60,17 @@ class MaskFormerConfig(PretrainedConfig):
         mask_weight (Optional[float], optional): [description]. Defaults to 20.0.
 
     Raises:
-        ValueError: Raised if the backbone model type selected is not in `MaskFormerConfig.backbones_supported`
+        `ValueError`: Raised if the backbone model type selected is not in `MaskFormerConfig.backbones_supported`
 
     Examples:
 
     ```python
     >>> from transformers import MaskFormerConfig, MaskFormerModel
 
-    >>> # Initializing a MaskFormer facebook/Francesco/maskformer-swin-base-ade configuration
+    >>> # Initializing a MaskFormer facebook/maskformer-swin-base-ade configuration
     >>> configuration = MaskFormerConfig()
 
-    >>> # Initializing a model from the facebook/Francesco/maskformer-swin-base-ade style configuration
+    >>> # Initializing a model from the facebook/maskformer-swin-base-ade style configuration
     >>> model = MaskFormerModel(configuration)
 
     >>> # Accessing the model configuration
@@ -80,25 +79,23 @@ class MaskFormerConfig(PretrainedConfig):
 
     """
     model_type = "maskformer"
-
-    attribute_map = {"hidden_size": "d_model"}
-
+    attribute_map = {"hidden_size": "mask_feature_size"}
     backbones_supported = ["swin"]
 
     def __init__(
         self,
-        fpn_feature_size: Optional[int] = 256,
-        mask_feature_size: Optional[int] = 256,
-        no_object_weight: Optional[float] = 0.1,
-        use_auxilary_loss: Optional[bool] = False,
-        backbone_config: Optional[Dict] = None,
-        detr_config: Optional[Dict] = None,
+        fpn_feature_size: int = 256,
+        mask_feature_size: int = 256,
+        no_object_weight: float = 0.1,
+        use_auxilary_loss: bool = False,
+        backbone_config: Dict = None,
+        detr_config: Dict = None,
         init_std: float = 0.02,
         init_xavier_std: float = 1.0,
-        dice_weight: Optional[float] = 1.0,
-        cross_entropy_weight: Optional[float] = 1.0,
-        mask_weight: Optional[float] = 20.0,
-        num_labels: Optional[int] = 150,
+        dice_weight: float = 1.0,
+        cross_entropy_weight: float = 1.0,
+        mask_weight: float = 20.0,
+        num_labels: int = 150,
         **kwargs,
     ):
         if backbone_config is None:
@@ -151,11 +148,7 @@ class MaskFormerConfig(PretrainedConfig):
                 Returns:
                     [`MaskFormerConfig`]: An instance of a configuration object
         """
-        return cls(
-            backbone_config=backbone_config.to_dict(),
-            detr_config=detr_config.to_dict(),
-            **kwargs,
-        )
+        return cls(backbone_config=backbone_config.to_dict(), detr_config=detr_config.to_dict(), **kwargs)
 
     @property
     def num_attention_heads(self) -> int:
