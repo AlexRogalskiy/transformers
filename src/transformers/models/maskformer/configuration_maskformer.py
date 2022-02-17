@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ MaskFormer model configuration"""
-from __future__ import annotations
-
 import copy
 from typing import Dict, Optional
 
@@ -38,10 +36,12 @@ class MaskFormerConfig(PretrainedConfig):
     This is the configuration class to store the configuration of a [`MaskFormer`]. It is used to instantiate a
     MaskFormer model according to the specified arguments, defining the model architecture. Instantiating a
     configuration with the defaults will yield a similar configuration to that of the
-    "Francesco/maskformer-swin-base-ade" architecture trained on ade20k-150
+    "Francesco/maskformer-swin-base-ade" architecture trained on ADE20k-150
 
     Configuration objects inherit from [`PretrainedConfig`] and can be used to control the model outputs. Read the
     documentation from [`PretrainedConfig`] for more information.
+
+    Currently, maskformer supports only Swin backbone.
 
     Args:
         dataset_metadata (DatasetMetadata, optional): [description]. Defaults to None.
@@ -66,9 +66,9 @@ class MaskFormerConfig(PretrainedConfig):
     Examples:
 
     ```python
-    >>> from transformers import MaskFormerModel, MaskFormerConfig
+    >>> from transformers import MaskFormerConfig, MaskFormerModel
 
-    >>> # Initializing a maskFormer facebook/Francesco/maskformer-swin-base-ade configuration
+    >>> # Initializing a MaskFormer facebook/Francesco/maskformer-swin-base-ade configuration
     >>> configuration = MaskFormerConfig()
 
     >>> # Initializing a model from the facebook/Francesco/maskformer-swin-base-ade style configuration
@@ -121,20 +121,13 @@ class MaskFormerConfig(PretrainedConfig):
                 )
             backbone_config = AutoConfig.for_model(backbone_model_type, **backbone_config)
 
-        if detr_config is None:
-            detr_config = DetrConfig()
-
-        else:
-            detr_config = DetrConfig(**detr_config)
+        detr_config = DetrConfig() if detr_config is None else DetrConfig(**detr_config)
 
         self.backbone_config = backbone_config
-
         self.detr_config = detr_config
-
+        # main feature dimension for the model
         self.fpn_feature_size = fpn_feature_size
         self.mask_feature_size = mask_feature_size
-        self.no_object_weight = no_object_weight
-        self.use_auxilary_loss = use_auxilary_loss
         # initializer
         self.init_std = init_std
         self.init_xavier_std = init_xavier_std
@@ -142,13 +135,12 @@ class MaskFormerConfig(PretrainedConfig):
         self.cross_entropy_weight = cross_entropy_weight
         self.dice_weight = dice_weight
         self.mask_weight = mask_weight
-
+        self.use_auxilary_loss = use_auxilary_loss
+        self.no_object_weight = no_object_weight
         super().__init__(num_labels=num_labels, **kwargs)
 
     @classmethod
-    def from_backbone_and_detr_configs(
-        cls, backbone_config: PretrainedConfig, detr_config: DetrConfig, **kwargs
-    ) -> MaskFormerConfig:
+    def from_backbone_and_detr_configs(cls, backbone_config: PretrainedConfig, detr_config: DetrConfig, **kwargs):
         """Instantiate a [`MaskFormerConfig`] (or a derived class) from a pre-trained backbone model configuration and DETR model
         configuration.
 
