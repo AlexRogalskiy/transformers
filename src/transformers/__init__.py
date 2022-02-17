@@ -246,7 +246,7 @@ _import_structure = {
     "models.lxmert": ["LXMERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "LxmertConfig", "LxmertTokenizer"],
     "models.m2m_100": ["M2M_100_PRETRAINED_CONFIG_ARCHIVE_MAP", "M2M100Config"],
     "models.marian": ["MarianConfig"],
-    "models.maskformer": ["MASK_FORMER_PRETRAINED_CONFIG_ARCHIVE_MAP", "MaskFormerConfig"],
+    "models.maskformer": ["MASKFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP", "MaskFormerConfig"],
     "models.mbart": ["MBartConfig"],
     "models.mbart50": [],
     "models.megatron_bert": ["MEGATRON_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "MegatronBertConfig"],
@@ -1120,7 +1120,7 @@ if is_torch_available():
     _import_structure["models.marian"].extend(["MarianForCausalLM", "MarianModel", "MarianMTModel"])
     _import_structure["models.maskformer"].extend(
         [
-            "MASK_FORMER_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "MASKFORMER_PRETRAINED_MODEL_ARCHIVE_LIST",
             "MaskFormerForInstanceSegmentation",
             "MaskFormerModel",
             "MaskFormerPreTrainedModel",
@@ -2482,7 +2482,7 @@ if TYPE_CHECKING:
     from .models.lxmert import LXMERT_PRETRAINED_CONFIG_ARCHIVE_MAP, LxmertConfig, LxmertTokenizer
     from .models.m2m_100 import M2M_100_PRETRAINED_CONFIG_ARCHIVE_MAP, M2M100Config
     from .models.marian import MarianConfig
-    from .models.maskformer import MASK_FORMER_PRETRAINED_CONFIG_ARCHIVE_MAP, MaskFormerConfig
+    from .models.maskformer import MASKFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP, MaskFormerConfig
     from .models.mbart import MBartConfig
     from .models.megatron_bert import MEGATRON_BERT_PRETRAINED_CONFIG_ARCHIVE_MAP, MegatronBertConfig
     from .models.mmbt import MMBTConfig
@@ -3198,7 +3198,7 @@ if TYPE_CHECKING:
         )
         from .models.marian import MarianForCausalLM, MarianModel, MarianMTModel
         from .models.maskformer import (
-            MASK_FORMER_PRETRAINED_MODEL_ARCHIVE_LIST,
+            MASKFORMER_PRETRAINED_MODEL_ARCHIVE_LIST,
             MaskFormerForInstanceSegmentation,
             MaskFormerModel,
             MaskFormerPreTrainedModel,
