@@ -1123,7 +1123,7 @@ if is_torch_available():
             "MASK_FORMER_PRETRAINED_MODEL_ARCHIVE_LIST",
             "MaskFormerForInstanceSegmentation",
             "MaskFormerModel",
-            "MaskFormerPreTrainedModel",
+            "MaskFormerPreTrainedModel"
         ]
     )
     _import_structure["models.mbart"].extend(
